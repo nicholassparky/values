@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Values Builder — Scarlet Spark</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #2C2C6B;
+      --navy-mid: #534AB7;
+      --navy-light: #EEEDFE;
+      --navy-lighter: #F5F4FE;
+      --gold: #EF9F27;
+      --teal: #1D9E75;
+      --teal-light: #E1F5EE;
+      --teal-dark: #085041;
+      --red-light: #FCEBEB;
+      --red-dark: #791F1F;
+      --red-mid: #E24B4A;
+      --purple-text: #26215C;
+      --purple-sub: #3C3489;
+      --purple-mid: #534AB7;
+      --gray-border: rgba(0,0,0,0.12);
+      --gray-bg: #F7F7F5;
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --text-hint: #999;
+      --white: #fff;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--gray-bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    /* Header */
+    .topbar {
+      background: var(--navy);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .spark-mark {
+      width: 44px; height: 44px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: var(--navy); font-weight: 600;
+      flex-shrink: 0;
+    }
+    .topbar h1 { font-size: 19px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+    .topbar p { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.4; }
+
+    /* Step nav */
+    .step-nav {
+      display: flex; gap: 4px; margin-bottom: 1.25rem;
+    }
+    .snav {
+      flex: 1; padding: 8px 4px; border: 1px solid var(--gray-border);
+      border-radius: var(--radius-sm); background: var(--white);
+      cursor: pointer; font-size: 11px; color: var(--text-hint);
+      text-align: center; font-family: inherit; transition: all 0.15s; line-height: 1.3;
+    }
+    .snav span { display: block; font-size: 14px; margin-bottom: 1px; }
+    .snav.done { color: var(--teal); border-color: #5DCAA5; background: var(--teal-light); }
+    .snav.active { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
+    .snav:hover:not(.active) { background: #eee; }
+
+    /* Cards */
+    .card {
+      background: var(--white); border: 1px solid var(--gray-border);
+      border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .07em;
+      color: var(--text-hint); text-transform: uppercase; margin-bottom: .35rem;
+    }
+    .card h2 { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: .4rem; }
+    .card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: .75rem; }
+    .card p:last-of-type { margin-bottom: 0; }
+
+    .callout {
+      background: var(--navy-light); padding: .875rem 1rem;
+      font-size: 13px; color: var(--purple-sub); line-height: 1.6;
+      margin-bottom: 1rem; border-left: 3px solid var(--navy-mid);
+    }
+    .callout b { color: var(--purple-text); font-weight: 600; }
+    .callout em { font-style: italic; }
+
+    /* Checklist */
+    .check-list { list-style: none; }
+    .check-list li {
+      display: flex; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid var(--gray-border);
+      font-size: 13px; line-height: 1.5; align-items: flex-start;
+    }
+    .check-list li:last-child { border-bottom: none; }
+    .chk {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1.5px solid var(--gray-border); background: var(--white);
+      cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; margin-top: 1px; transition: all .12s;
+      font-size: 12px; color: transparent;
+    }
+    .chk.checked { background: var(--navy-mid); border-color: var(--navy-mid); color: #fff; }
+    .check-text b { font-weight: 600; }
+    .check-sub { font-size: 12px; color: var(--text-hint); display: block; margin-top: 1px; }
+
+    /* Progress */
+    .progress-wrap { margin-bottom: 1.25rem; }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-hint); margin-bottom: 5px;
+    }
+    .progress-bar { height: 4px; background: var(--gray-border); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--navy-mid); border-radius: 2px; transition: width .3s; }
+
+    /* Form elements */
+    label.field-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: .05em;
+    }
+    textarea, input[type="text"] {
+      width: 100%; border: 1px solid var(--gray-border); border-radius: var(--radius-sm);
+      padding: 9px 12px; font-size: 13px; color: var(--text);
+      background: var(--white); font-family: inherit; outline: none; transition: border-color .12s;
+    }
+    textarea { resize: vertical; line-height: 1.5; min-height: 90px; }
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--navy-mid); box-shadow: 0 0 0 3px rgba(83,74,183,.12);
+    }
+
+    /* Question blocks */
+    .q-block {
+      border: 1px solid var(--gray-border); border-radius: var(--radius-lg);
+      overflow: hidden; margin-bottom: .75rem;
+    }
+    .q-header {
+      padding: .875rem 1rem; background: #F9F9F8;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .q-num {
+      font-size: 11px; font-weight: 600; color: var(--navy-mid);
+      background: var(--navy-light); padding: 2px 8px; border-radius: 20px;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .q-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.5; flex: 1; }
+    .q-hint { font-size: 12px; color: var(--text-hint); margin-top: 3px; line-height: 1.4; }
+    .q-answered {
+      font-size: 11px; font-weight: 600; color: var(--teal);
+      background: var(--teal-light); padding: 2px 8px; border-radius: 20px;
+      flex-shrink: 0; margin-top: 2px; display: none;
+    }
+    .q-body { padding: .875rem 1rem; }
+
+    /* Buttons */
+    .btn {
+      padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px;
+      cursor: pointer; font-family: inherit; border: 1px solid var(--gray-border);
+      background: var(--white); color: var(--text); transition: all .12s; font-weight: 500;
+    }
+    .btn:hover { background: #f2f2f2; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn.primary {
+      background: var(--navy); color: #fff; border-color: var(--navy);
+    }
+    .btn.primary:hover:not(:disabled) { background: var(--navy-mid); border-color: var(--navy-mid); }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+
+    /* AI output box */
+    .ai-box {
+      background: var(--navy-light); border-radius: var(--radius-md);
+      padding: 1rem; margin-top: .875rem;
+    }
+    .ai-label {
+      font-size: 11px; color: var(--navy-mid); font-weight: 600;
+      letter-spacing: .07em; text-transform: uppercase; margin-bottom: .5rem;
+    }
+    .ai-text { font-size: 13px; color: var(--purple-text); line-height: 1.6; white-space: pre-wrap; min-height: 40px; }
+    .ai-loading { color: var(--navy-mid); font-size: 13px; font-style: italic; }
+
+    /* Value library */
+    .tab-row { display: flex; gap: 4px; margin-bottom: 1rem; }
+    .tab {
+      padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+      border: 1px solid var(--gray-border); background: var(--white);
+      cursor: pointer; color: var(--text-muted); font-family: inherit; transition: all .12s;
+    }
+    .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+    .vlib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .vcard {
+      border: 1px solid var(--gray-border); border-radius: var(--radius-md);
+      padding: .875rem; cursor: pointer; transition: all .12s;
+      background: var(--white); text-align: left; font-family: inherit; width: 100%;
+    }
+    .vcard:hover { border-color: var(--navy-mid); background: var(--navy-lighter); }
+    .vcard.sel { border-color: var(--navy-mid); background: var(--navy-light); border-width: 2px; }
+    .vcard-emoji { font-size: 18px; margin-bottom: 5px; display: block; }
+    .vcard-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .vcard-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+    /* Chips */
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--navy-light); border-radius: 20px;
+      padding: 4px 10px; font-size: 12px; color: var(--purple-sub); margin: 3px;
+    }
+    .chip-x {
+      background: none; border: none; cursor: pointer;
+      color: var(--navy-mid); font-size: 15px; line-height: 1; padding: 0 0 0 2px;
+    }
+
+    /* Workshop cards */
+    .sv-card {
+      border: 1px solid var(--gray-border); border-radius: var(--radius-lg);
+      overflow: hidden; margin-bottom: .75rem;
+    }
+    .sv-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: .875rem 1rem; background: #F9F9F8; cursor: pointer; user-select: none;
+    }
+    .sv-emoji { font-size: 18px; flex-shrink: 0; }
+    .sv-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+    .sv-tog {
+      font-size: 20px; color: var(--text-hint); background: none;
+      border: none; cursor: pointer; line-height: 1; padding: 0 4px; font-family: inherit;
+    }
+    .sv-body { padding: 1rem; display: none; flex-direction: column; gap: 12px; }
+    .sv-body.open { display: flex; }
+
+    .looks-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .looks-col { border-radius: var(--radius-md); padding: .875rem; }
+    .looks-col.g { background: var(--teal-light); border-top: 2px solid var(--teal); }
+    .looks-col.b { background: var(--red-light); border-top: 2px solid var(--red-mid); }
+    .lc-label { font-size: 11px; font-weight: 700; margin-bottom: 6px; letter-spacing: .04em; }
+    .looks-col.g .lc-label { color: var(--teal-dark); }
+    .looks-col.b .lc-label { color: var(--red-dark); }
+    .looks-col textarea {
+      background: transparent; border: none; border-top: 1px solid rgba(0,0,0,.08);
+      border-radius: 0; padding: 7px 0 0; min-height: 70px; font-size: 12px; box-shadow: none;
+    }
+
+    /* Preview */
+    .preview-dark {
+      background: var(--navy); border-radius: var(--radius-lg);
+      padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .pd-eye {
+      font-size: 11px; color: rgba(255,255,255,.45); font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase; margin-bottom: .5rem;
+    }
+    .pd-head { font-size: 15px; color: var(--gold); font-weight: 600; margin-bottom: 1.25rem; }
+    .pv-item {
+      display: flex; gap: 12px; padding: .875rem 0;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .pv-item:last-child { border-bottom: 1px solid rgba(255,255,255,.1); }
+    .pv-emoji { font-size: 22px; flex-shrink: 0; }
+    .pv-vname { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 3px; }
+    .pv-desc { font-size: 12px; color: rgba(255,255,255,.6); line-height: 1.5; margin-bottom: 6px; }
+    .pv-looks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .pv-lb { border-radius: var(--radius-sm); padding: 6px 8px; }
+    .pv-lb.g { background: rgba(29,158,117,.15); }
+    .pv-lb.b { background: rgba(226,75,74,.12); }
+    .pv-lb-label { font-size: 10px; font-weight: 700; margin-bottom: 3px; letter-spacing: .04em; }
+    .pv-lb.g .pv-lb-label { color: #9FE1CB; }
+    .pv-lb.b .pv-lb-label { color: #F7C1C1; }
+    .pv-lb-text { font-size: 11px; color: rgba(255,255,255,.5); line-height: 1.4; white-space: pre-wrap; }
+
+    /* Step visibility */
+    .step-content { display: none; }
+    .step-content.active { display: block; }
+
+    /* Print */
+    @media print {
+      body { background: white; }
+      .topbar, .step-nav, .btn-row, .card:not(.preview-card) { display: none; }
+      .preview-dark { background: #2C2C6B !important; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="spark-mark">✦</div>
+    <div>
+      <h1>Values Builder <span style="font-size:12px;opacity:.6;font-weight:400">by Scarlet Spark</span></h1>
+      <p>A facilitated workshop for teams to develop values that guide how you work together</p>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="snav active" id="nav-0" onclick="goStep(0)"><span>01</span>Prepare</button>
+    <button class="snav" id="nav-1" onclick="goStep(1)"><span>02</span>Explore</button>
+    <button class="snav" id="nav-2" onclick="goStep(2)"><span>03</span>Generate</button>
+    <button class="snav" id="nav-3" onclick="goStep(3)"><span>04</span>Select</button>
+    <button class="snav" id="nav-4" onclick="goStep(4)"><span>05</span>Workshop</button>
+    <button class="snav" id="nav-5" onclick="goStep(5)"><span>06</span>Preview</button>
+  </div>
+
+  <!-- STEP 1: PREPARE -->
+  <div id="step-0" class="step-content active">
+    <div class="card">
+      <div class="eyebrow">Step 01 — Before you start</div>
+      <h2>Set up for success</h2>
+      <p>Organizations often have a mission and vision but lack the values that describe <em>how</em> to operate and make decisions together. This tool guides your team through building those values. Check each item off before you begin.</p>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Process</div>
+      <h2>Decide how you'll work together</h2>
+      <p>Choose a format that works for your team and share it with everyone in advance.</p>
+      <ul class="check-list">
+        <li>
+          <button class="chk" onclick="toggleCheck(this)"></button>
+          <div class="check-text">
+            <b>Process decided and shared</b>
+            <span class="check-sub">e.g. shared whiteboard (Miro/Jamboard), in-person with markers, WhatsApp thread, video call with a note-taker</span>
+          </div>
+        </li>
+        <li>
+          <button class="chk" onclick="toggleCheck(this)"></button>
+          <div class="check-text">
+            <b>Roles assigned</b>
+            <span class="check-sub">e.g. facilitator, note-taker, wordsmith, community advisor or elder</span>
+          </div>
+        </li>
+        <li>
+          <button class="chk" onclick="toggleCheck(this)"></button>
+          <div class="check-text">
+            <b>Decision-making process agreed on</b>
+            <span class="check-sub">e.g. majority vote, consensus, everyone advises and one person decides, veto power</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Frame the conversation</div>
+      <h2>Invite your team</h2>
+      <p>Tell everyone why you're doing this and how their input will be used. Here's a template to adapt:</p>
+      <div class="callout" style="margin-bottom:0;font-style:italic">
+        "We want to be more aligned as an organization about <b>how</b> we work together — not just what we do. So we'd love everyone to participate in building our values. Our ideation process will be [X]. Our decision-making process will be [Y]. Once finalized, we'll apply our values to everything from hiring to everyday decisions. You make this organization what it is — we're eager to co-create this with you."
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#5DCAA5">
+      <div class="eyebrow" style="color:var(--teal)">Why this matters</div>
+      <h2>What you're building</h2>
+      <p>Values are your principles — the ideals you refuse to compromise as you pursue your mission. They guide decisions, maintain cultural health, and describe how you show up at your best.</p>
+      <p><strong>Aim for 3–7 values</strong> — enough to be meaningful, few enough to remember. Use them when making hiring decisions, planning strategy, navigating conflict, and building culture.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn primary" onclick="goStep(1)">We're ready — start exploring →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: EXPLORE -->
+  <div id="step-1" class="step-content">
+    <div class="card">
+      <div class="eyebrow">Step 02 — Team exploration</div>
+      <h2>Collect your team's responses</h2>
+      <p>Run these questions with your team — in a meeting, survey, or async thread. Then enter responses for each question below. Capture all raw ideas; don't worry about perfect wording yet.</p>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-progress-label">0 of 6 questions answered</span>
+        <span id="org-meta"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="q-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:.75rem">
+      <label class="field-label" for="org-name">Organization name <span style="font-weight:400;text-transform:none;font-size:12px;color:var(--text-hint)">(optional — helps personalize AI output)</span></label>
+      <input type="text" id="org-name" placeholder="e.g. Riverside Animal Shelter" oninput="document.getElementById('org-meta').textContent=this.value" />
+    </div>
+
+    <div id="q-blocks"></div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(0)">← Back</button>
+      <button class="btn primary" onclick="goStep(2)">Generate values from our responses →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: GENERATE -->
+  <div id="step-2" class="step-content">
+    <div class="card">
+      <div class="eyebrow">Step 03 — AI generation</div>
+      <h2>Generate draft values</h2>
+      <p>AI will read your team's responses and suggest values that reflect what you actually said — not generic templates. Click generate to begin.</p>
+      <div class="btn-row" style="margin-top:0;margin-bottom:1.25rem">
+        <button class="btn primary" id="gen-btn" onclick="generateValues()">Generate values from our responses →</button>
+        <button class="btn" onclick="goStep(1)">← Edit responses</button>
+      </div>
+      <div id="gen-output" style="display:none">
+        <div class="ai-box">
+          <div class="ai-label">AI-suggested values</div>
+          <div class="ai-text" id="gen-text"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="buildAIGrid();goStep(3)">Select and refine →</button>
+          <button class="btn" onclick="generateValues()">Regenerate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: SELECT -->
+  <div id="step-3" class="step-content">
+    <div class="card">
+      <div class="eyebrow">Step 04 — Select values</div>
+      <h2>Choose what resonates</h2>
+      <p>Pick from your AI-generated values or browse the Scarlet Spark library. Select all that feel right — you'll refine to 3–7 in the workshop step.</p>
+      <div class="tab-row">
+        <button class="tab active" id="tab-ai" onclick="showTab('ai')">From your responses</button>
+        <button class="tab" id="tab-lib" onclick="showTab('lib')">Value library (20)</button>
+      </div>
+      <div id="tab-ai-content">
+        <div class="vlib-grid" id="ai-grid"></div>
+        <p style="font-size:12px;color:var(--text-hint);margin-top:.75rem">Not finding the right fit? Browse the value library for more options.</p>
+      </div>
+      <div id="tab-lib-content" style="display:none">
+        <div class="vlib-grid" id="lib-grid"></div>
+      </div>
+    </div>
+
+    <div class="card" id="sel-panel" style="display:none">
+      <div class="eyebrow">Selected values</div>
+      <div id="sel-chips"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(2)">← Back</button>
+      <button class="btn primary" onclick="loadWorkshop();goStep(4)">Workshop these values →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: WORKSHOP -->
+  <div id="step-4" class="step-content">
+    <div class="card">
+      <div class="eyebrow">Step 05 — Workshop</div>
+      <h2>Define what each value looks like in practice</h2>
+      <p>This is what makes values real and usable. For each value, describe the belief behind it, then give concrete examples of what living this value looks like — and what violating it looks like.</p>
+    </div>
+    <div id="workshop-list"></div>
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(3)">← Edit selection</button>
+      <button class="btn primary" onclick="renderPreview();goStep(5)">Preview our values →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: PREVIEW -->
+  <div id="step-5" class="step-content">
+    <div class="preview-dark preview-card">
+      <div class="pd-eye">Scarlet Spark Values Builder</div>
+      <div class="pd-head" id="preview-heading">Our values: How we work together to achieve results</div>
+      <div id="preview-body"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Reevaluating question</div>
+      <h2>Do these values represent us at our best?</h2>
+      <p>Share this preview with your full team. Ask: What resonates? What feels unclear? What's missing? Then refine before finalizing.</p>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Embedding your values</div>
+      <h2>Weave values into everything</h2>
+      <p>Once finalized, embed your values into: website, job and volunteer descriptions, hiring and onboarding, how you welcome new members, compensation decisions, meetings and rituals, strategic planning, performance conversations, learning and development, and offboarding.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(4)">← Keep workshopping</button>
+      <button class="btn" onclick="window.print()">Print / save as PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────────────
+  // Replace this with your deployed Cloudflare Worker URL after deployment
+  const WORKER_URL = "https://your-worker.your-subdomain.workers.dev";
+
+  // ─── DATA ────────────────────────────────────────────────────────────────
+  const QUESTIONS = [
+    { q: "Why did people join this organization? What makes them want to be part of it, especially on the tough days?", hint: "Tip: Ask everyone to share one sentence. Look for recurring themes." },
+    { q: "What principles or beliefs will serve you in achieving your vision?", hint: "Tip: Think about what sets high-performing, healthy teams apart from struggling ones." },
+    { q: "What values show up when your organization is at its best? Share a story or example.", hint: "Tip: Specific stories are gold — 'remember when we...' moments reveal real values." },
+    { q: "What tradeoffs are you willing to make?", hint: "e.g. inclusion over speed · transparency over comfort · consensus over quick decisions · depth over breadth" },
+    { q: "What behaviors would feel like a betrayal of who you are?", hint: "Tip: Anti-values are often as revealing as the values themselves." },
+    { q: "What makes someone a great fit for this team — and what makes someone a poor fit?", hint: "Tip: Think about people who thrived here and people who struggled. What was different?" }
+  ];
+
+  const LIBRARY = [
+    { e:"🧪", n:"Try Sh*t Out", d:"We stay curious, experiment with new solutions, and keep up to date with our ecosystem. We experiment as a way to grow, evolve, and spark lasting change." },
+    { e:"🌱", n:"Foster Abundance", d:"We believe there's space for everyone, that the pie grows when we share it, that trust breeds trustworthiness, and that all animals are worthy of love — humans included." },
+    { e:"🌐", n:"Cultivate Diversity", d:"We bring together different people and perspectives and hold space for complexity to spark ideas, empathy, and opportunity." },
+    { e:"👓", n:"Commit to Clarity", d:"We go out of our way to achieve alignment, share context, exchange feedback, and make the implicit explicit so we can work together smoothly, swiftly, and joyfully." },
+    { e:"🔥", n:"Share Power", d:"We build capacity in ourselves and others, give and take responsibility, and build things together so our results and our collaborators grow stronger." },
+    { e:"🍵", n:"Drink From the Cup of Joy", d:"We dwell on the good things (while honoring all emotions), delight in our work, and take great care of the animals that we are." },
+    { e:"🕸️", n:"Engineer Elegance", d:"We seek out simple, light-lift solutions that achieve maximum effect with minimal resources." },
+    { e:"🤝", n:"Lead With Trust", d:"We extend trust first, assume good intent, and build relationships that make hard conversations possible." },
+    { e:"🌊", n:"Embrace Uncertainty", d:"We stay grounded when things are unclear, treat ambiguity as an invitation, and move forward with humility and adaptability." },
+    { e:"🔍", n:"Pursue Truth", d:"We seek honest feedback, interrogate our assumptions, and prioritize what's actually true over what feels comfortable." },
+    { e:"🌿", n:"Think Long", d:"We make decisions with future generations in mind and resist the pull of short-term thinking at the expense of lasting impact." },
+    { e:"🫂", n:"Care Fully", d:"We show up for each other with genuine interest and compassion — and extend that same care to every stakeholder we serve." },
+    { e:"🎯", n:"Stay Accountable", d:"We do what we say, own our mistakes quickly, and hold each other to our commitments with kindness and clarity." },
+    { e:"🧭", n:"Act With Integrity", d:"We do the right thing even when it's hard, and we let our values guide us when there's no rulebook for the situation." },
+    { e:"💡", n:"Keep Learning", d:"We treat every project, mistake, and conversation as a chance to get better — and we make space for learning across our whole organization." },
+    { e:"⚡", n:"Move With Purpose", d:"We act with urgency on things that matter and resist the temptation to do more when doing less would be better." },
+    { e:"🌍", n:"Think Systemically", d:"We look beyond individual actions to understand root causes, feedback loops, and the broader systems our work touches." },
+    { e:"🔓", n:"Default to Openness", d:"We share information freely, work in the open, and believe transparency builds the trust that makes collaboration possible." },
+    { e:"🦁", n:"Lead Courageously", d:"We say hard things, challenge the status quo, and advocate boldly for what we believe — even when it's uncomfortable." },
+    { e:"🌺", n:"Honor Belonging", d:"We build spaces where everyone can show up fully, and actively remove barriers that make people feel like outsiders." }
+  ];
+
+  // ─── STATE ───────────────────────────────────────────────────────────────
+  const state = {
+    answers: Array(QUESTIONS.length).fill(""),
+    aiValues: [],
+    selected: new Map(),
+    workshop: {}
+  };
+
+  // ─── HELPERS ─────────────────────────────────────────────────────────────
+  function esc(s) {
+    return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function goStep(n) {
+    document.querySelectorAll(".step-content").forEach((el, i) => el.classList.toggle("active", i === n));
+    document.querySelectorAll(".snav").forEach((el, i) => {
+      el.classList.toggle("active", i === n);
+      el.classList.toggle("done", i < n);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function toggleCheck(btn) {
+    btn.classList.toggle("checked");
+    btn.textContent = btn.classList.contains("checked") ? "✓" : "";
+  }
+
+  // ─── QUESTIONS ───────────────────────────────────────────────────────────
+  function buildQBlocks() {
+    const container = document.getElementById("q-blocks");
+    container.innerHTML = QUESTIONS.map((q, i) => `
+      <div class="q-block">
+        <div class="q-header">
+          <span class="q-num">Q${i + 1}</span>
+          <div style="flex:1">
+            <div class="q-text">${esc(q.q)}</div>
+            <div class="q-hint">${esc(q.hint)}</div>
+          </div>
+          <span class="q-answered" id="qbadge-${i}">✓ answered</span>
+        </div>
+        <div class="q-body">
+          <label class="field-label" for="qa-${i}">Team responses &amp; notes</label>
+          <textarea id="qa-${i}" placeholder="Paste or type your team's answers here — quotes, bullet points, anything…" oninput="state.answers[${i}]=this.value;updateProgress()">${esc(state.answers[i])}</textarea>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function updateProgress() {
+    const answered = state.answers.filter(a => a.trim().length > 0).length;
+    const pct = Math.round(answered / QUESTIONS.length * 100);
+    document.getElementById("q-fill").style.width = pct + "%";
+    document.getElementById("q-progress-label").textContent = answered + " of " + QUESTIONS.length + " questions answered";
+    state.answers.forEach((a, i) => {
+      const badge = document.getElementById("qbadge-" + i);
+      if (badge) badge.style.display = a.trim() ? "inline-block" : "none";
+    });
+  }
+
+  // ─── AI GENERATE ─────────────────────────────────────────────────────────
+  async function generateValues() {
+    const org = document.getElementById("org-name").value.trim();
+    const answered = QUESTIONS.map((q, i) =>
+      state.answers[i].trim() ? `Q: ${q.q}\nResponses: ${state.answers[i]}` : ""
+    ).filter(Boolean);
+
+    if (!answered.length) {
+      alert("Please fill in at least one question response first.");
+      goStep(1);
+      return;
+    }
+
+    document.getElementById("gen-output").style.display = "block";
+    document.getElementById("gen-text").innerHTML = '<span class="ai-loading">Reading your team\'s responses and drafting values...</span>';
+    document.getElementById("gen-btn").disabled = true;
+
+    const prompt = `You are an organizational values expert working with ${org || "an organization"}.
+
+Based on these team exploration responses, generate 6 distinct organizational values. Each value should:
+- Have a short, memorable, evocative name (2–5 words — can be playful or poetic like "Foster Abundance" or "Try Sh*t Out", not generic like "Integrity")
+- Have a 1–2 sentence "we" description capturing the belief behind it
+- Genuinely reflect the team's actual words and themes, not generic corporate language
+
+Team responses:
+${answered.join("\n\n")}
+
+Respond ONLY as a JSON array, nothing else, no markdown:
+[{"emoji":"🌱","name":"Value Name","desc":"We believe... description."}]
+
+Return exactly 6 values. Use a fitting emoji for each.`;
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
+      });
+      const data = await res.json();
+      const raw = (data.content || []).map(b => b.text || "").join("").replace(/```json|```/g, "").trim();
+      state.aiValues = JSON.parse(raw);
+      document.getElementById("gen-text").textContent = state.aiValues.map(v => `${v.emoji} ${v.name}\n${v.desc}`).join("\n\n");
+    } catch (e) {
+      document.getElementById("gen-text").textContent = "Something went wrong — check that your Worker URL is configured and try again.";
+    }
+    document.getElementById("gen-btn").disabled = false;
+  }
+
+  // ─── SELECT ──────────────────────────────────────────────────────────────
+  function buildAIGrid() {
+    const g = document.getElementById("ai-grid");
+    if (!state.aiValues.length) {
+      g.innerHTML = "<p style='font-size:13px;color:var(--text-hint);grid-column:span 2'>Generate values first — they'll appear here.</p>";
+      return;
+    }
+    g.innerHTML = state.aiValues.map((v, i) => {
+      const id = "ai-" + i;
+      return `<button class="vcard${state.selected.has(id) ? " sel" : ""}" id="vc-${id}" onclick="toggleSel('${id}','${esc(v.emoji)}','${esc(v.name)}','${esc(v.desc)}')">
+        <span class="vcard-emoji">${v.emoji}</span>
+        <div class="vcard-name">${esc(v.name)}</div>
+        <div class="vcard-desc">${esc(v.desc)}</div>
+      </button>`;
+    }).join("");
+  }
+
+  function buildLibGrid() {
+    const g = document.getElementById("lib-grid");
+    g.innerHTML = LIBRARY.map((v, i) => {
+      const id = "lib-" + i;
+      return `<button class="vcard${state.selected.has(id) ? " sel" : ""}" id="vc-${id}" onclick="toggleSel('${id}','${esc(v.e)}','${esc(v.n)}','${esc(v.d)}')">
+        <span class="vcard-emoji">${v.e}</span>
+        <div class="vcard-name">${esc(v.n)}</div>
+        <div class="vcard-desc">${esc(v.d)}</div>
+      </button>`;
+    }).join("");
+  }
+
+  function toggleSel(id, emoji, name, desc) {
+    if (state.selected.has(id)) {
+      state.selected.delete(id);
+    } else {
+      state.selected.set(id, { emoji, name, desc });
+    }
+    const card = document.getElementById("vc-" + id);
+    if (card) card.classList.toggle("sel", state.selected.has(id));
+    renderChips();
+  }
+
+  function renderChips() {
+    const panel = document.getElementById("sel-panel");
+    const chips = document.getElementById("sel-chips");
+    if (!state.selected.size) { panel.style.display = "none"; return; }
+    panel.style.display = "block";
+    chips.innerHTML = [...state.selected.entries()].map(([id, v]) =>
+      `<span class="chip"><span style="font-size:14px">${v.emoji}</span>${esc(v.name)}<button class="chip-x" onclick="toggleSel('${id}','','','')">×</button></span>`
+    ).join("");
+  }
+
+  function showTab(t) {
+    document.getElementById("tab-ai").classList.toggle("active", t === "ai");
+    document.getElementById("tab-lib").classList.toggle("active", t === "lib");
+    document.getElementById("tab-ai-content").style.display = t === "ai" ? "block" : "none";
+    document.getElementById("tab-lib-content").style.display = t === "lib" ? "block" : "none";
+  }
+
+  // ─── WORKSHOP ────────────────────────────────────────────────────────────
+  function loadWorkshop() {
+    [...state.selected.entries()].forEach(([id, v]) => {
+      if (!state.workshop[id]) state.workshop[id] = { ...v, looksGood: "", looksBad: "" };
+    });
+    const list = document.getElementById("workshop-list");
+    if (!state.selected.size) {
+      list.innerHTML = '<div class="card"><p>No values selected. Go back and choose some.</p></div>';
+      return;
+    }
+    list.innerHTML = [...state.selected.keys()].map(id => {
+      const d = state.workshop[id];
+      return `<div class="sv-card" id="wcard-${id}">
+        <div class="sv-head" onclick="toggleWCard('${id}')">
+          <span class="sv-emoji">${d.emoji}</span>
+          <span class="sv-name">${esc(d.name)}</span>
+          <button class="sv-tog" id="wtog-${id}">+</button>
+        </div>
+        <div class="sv-body" id="wbody-${id}">
+          <div>
+            <label class="field-label">Refine the name</label>
+            <input type="text" value="${esc(d.name)}" oninput="state.workshop['${id}'].name=this.value" style="margin-bottom:10px" />
+            <label class="field-label">What this value means to us</label>
+            <textarea placeholder="Describe the belief or principle behind this value using 'we' language…" oninput="state.workshop['${id}'].desc=this.value">${esc(d.desc)}</textarea>
+          </div>
+          <div class="looks-row">
+            <div class="looks-col g">
+              <div class="lc-label">How it looks</div>
+              <textarea placeholder="One behavior per line&#10;e.g. Share context before asking for decisions" oninput="state.workshop['${id}'].looksGood=this.value">${esc(d.looksGood)}</textarea>
+            </div>
+            <div class="looks-col b">
+              <div class="lc-label">How it doesn't look</div>
+              <textarea placeholder="One behavior per line&#10;e.g. Rely only on short-term metrics" oninput="state.workshop['${id}'].looksBad=this.value">${esc(d.looksBad)}</textarea>
+            </div>
+          </div>
+          <div>
+            <button class="btn" style="font-size:12px;padding:7px 14px" onclick="suggestBehaviors('${id}')">Suggest behaviors with AI →</button>
+          </div>
+          <div id="wai-${id}" style="display:none">
+            <div class="ai-box">
+              <div class="ai-label">AI suggestions — click to copy into the fields above</div>
+              <div class="ai-text" id="wai-text-${id}"></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  function toggleWCard(id) {
+    const body = document.getElementById("wbody-" + id);
+    const tog = document.getElementById("wtog-" + id);
+    const open = body.classList.toggle("open");
+    tog.textContent = open ? "−" : "+";
+  }
+
+  async function suggestBehaviors(id) {
+    const d = state.workshop[id];
+    const box = document.getElementById("wai-" + id);
+    const txt = document.getElementById("wai-text-" + id);
+    box.style.display = "block";
+    txt.innerHTML = '<span class="ai-loading">Thinking of concrete behaviors...</span>';
+
+    const prompt = `For the organizational value "${d.name}" (${d.desc}), generate 3 concrete behavioral examples for "how it looks" and 3 for "how it doesn't look".
+
+Respond ONLY as JSON, nothing else:
+{"looksGood":["behavior 1","behavior 2","behavior 3"],"looksBad":["behavior 1","behavior 2","behavior 3"]}
+
+Make behaviors specific, observable, and realistic for a team environment.`;
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
+      });
+      const data = await res.json();
+      const raw = (data.content || []).map(b => b.text || "").join("").replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(raw);
+
+      txt.innerHTML =
+        "<b style='color:var(--teal-dark);font-size:12px'>How it looks:</b><br>" +
+        parsed.looksGood.map(b => "· " + b).join("<br>") +
+        "<br><br><b style='color:var(--red-dark);font-size:12px'>How it doesn't look:</b><br>" +
+        parsed.looksBad.map(b => "· " + b).join("<br>");
+
+      const gArea = document.querySelector(`#wbody-${id} .looks-col.g textarea`);
+      const bArea = document.querySelector(`#wbody-${id} .looks-col.b textarea`);
+      if (gArea && !gArea.value) { gArea.value = parsed.looksGood.join("\n"); state.workshop[id].looksGood = gArea.value; }
+      if (bArea && !bArea.value) { bArea.value = parsed.looksBad.join("\n"); state.workshop[id].looksBad = bArea.value; }
+    } catch (e) {
+      txt.textContent = "Something went wrong. Try again.";
+    }
+  }
+
+  // ─── PREVIEW ─────────────────────────────────────────────────────────────
+  function renderPreview() {
+    const org = document.getElementById("org-name").value.trim();
+    document.getElementById("preview-heading").textContent =
+      (org ? org + "'s values" : "Our values") + ": How we work together to achieve results";
+
+    const ids = [...state.selected.keys()];
+    const body = document.getElementById("preview-body");
+    if (!ids.length) {
+      body.innerHTML = "<p style='color:rgba(255,255,255,.4);font-size:13px;text-align:center;padding:1rem'>No values selected yet.</p>";
+      return;
+    }
+    body.innerHTML = ids.map(id => {
+      const d = state.workshop[id] || state.selected.get(id) || {};
+      const good = (d.looksGood || "").trim().split("\n").filter(Boolean);
+      const bad  = (d.looksBad  || "").trim().split("\n").filter(Boolean);
+      return `<div class="pv-item">
+        <div class="pv-emoji">${d.emoji || ""}</div>
+        <div style="flex:1;min-width:0">
+          <div class="pv-vname">${esc(d.name)}</div>
+          ${d.desc ? `<div class="pv-desc">${esc(d.desc)}</div>` : ""}
+          ${(good.length || bad.length) ? `<div class="pv-looks">
+            ${good.length ? `<div class="pv-lb g"><div class="pv-lb-label">How it looks</div><div class="pv-lb-text">${good.map(b => "· " + esc(b)).join("\n")}</div></div>` : ""}
+            ${bad.length  ? `<div class="pv-lb b"><div class="pv-lb-label">How it doesn't look</div><div class="pv-lb-text">${bad.map(b => "· " + esc(b)).join("\n")}</div></div>`  : ""}
+          </div>` : ""}
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // ─── INIT ────────────────────────────────────────────────────────────────
+  buildQBlocks();
+  buildLibGrid();
+</script>
+</body>
+</html>
